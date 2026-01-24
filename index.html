@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>x8r - music</title>
+    <link rel="icon" type="image/x-icon" href="https://x8r.dev/png/pfp.jpg?v=latest">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="/icons/remixicon.css">
+    <style>
+        html,
+        body {
+            height: 100vh;
+            background: url(/bg.png);
+            background-color: black;
+        }
+
+        body {
+            background-color: #000;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        * {
+            font-family: Inter, Arial, sans-serif;
+            font-weight: 500;
+            letter-spacing: -1px;
+        }
+
+        body {
+            padding: 0;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-size: cover;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .liquid-glass {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 32px;
+            border-radius: 1.5rem;
+            border: none;
+            background: rgba(255, 255, 255, 0);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+            box-shadow:
+                inset 0 2px 2px rgba(255, 255, 255, 0.08),
+                inset 0 -2px 3px rgba(0, 0, 0, 0.2),
+                0 10px 20px rgba(0, 0, 0, 0.4);
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-size: 24px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .liquid-glass::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 1.5rem;
+            padding: 1px;
+            background: linear-gradient(to bottom right,
+                    rgba(255, 255, 255, 0.5) 0%,
+                    rgba(255, 255, 255, 0.05) 30%,
+                    rgba(255, 255, 255, 0.05) 70%,
+                    rgba(255, 255, 255, 0.5) 100%);
+            -webkit-mask:
+                linear-gradient(#fff 0 0) content-box,
+                linear-gradient(#fff 0 0);
+            mask:
+                linear-gradient(#fff 0 0) content-box,
+                linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        input {
+            outline: none;
+        }
+
+        .input-wrapper:has(input:focus) {
+            background: rgba(255, 255, 255, 0.025);
+        }
+
+        .result img {
+            border-radius: 15px;
+            margin-left: -20px;
+        }
+
+        .result .title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .result .artist {
+            font-size: 14px;
+            color: #cccccc;
+        }
+
+        .result {
+            transition: scale 0.35s cubic-bezier(.34, 2, .84, 1), background 0.2s ease;
+            margin-bottom: 10px;
+        }
+
+        .result:hover {
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        #cover-img {
+            width: 300px;
+            height: 300px;
+            border-radius: 1.5rem;
+            background: #515151;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #cover-img i {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 100px;
+            color: #ffffff;
+            opacity: 0.3;
+        }
+
+        .player-pane h1 {
+            margin-top: 20px;
+            font-size: 25px;
+            color: #ffffff;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+        }
+
+        .player-pane p {
+            font-size: 15px;
+            color: #cccccc;
+            margin-top: -10px;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+        }
+
+        .progress-bar {
+            width: 300px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin: 15px auto 0 auto;
+            overflow: hidden;
+        }
+
+        .progress-inner {
+            width: 0;
+            height: 100%;
+            background: #e3e3e3;
+            box-shadow: 0 0 25px white;
+            border-radius: 4px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 35px;
+        }
+
+        .controls button {
+            transition: scale cubic-bezier(.34, 2, .84, 1) 0.35s, background 0.2s ease;
+        }
+
+        .controls button:hover {
+            scale: 1.02;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        #results {
+            overflow-y: auto;
+            height: 90%;
+            overflow-x: unset;
+            padding-right: 7px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 3px;
+            background: rgb(70, 70, 70);
+            border-radius: 2347px;
+            margin-left: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgb(138, 138, 138);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="liquid-glass" style="width: 650px; height: 550px;">
+        <div class="search-pane" style="width: 50%; height: 90%;">
+            <div class="input-wrapper liquid-glass" style="padding: 0; margin-bottom: 15px;">
+                <input type="text"
+                    style="background: transparent; border-radius: 2rem; font-size: 17px; border: none; padding: 0.8rem; color: white;"
+                    placeholder="Search for a song...">
+            </div>
+            <div id="results">
+            </div>
+        </div>
+        <div class="player-pane" style="width: 50%; height: 90%; position: relative;">
+            <div id="cover-img" style="display: flex; align-items: center; justify-content: center;">
+                <i class="ri-music-2-line"></i>
+            </div>
+            <h1 id="song-name">No track</h1>
+            <p id="artist-name">Search for music first.</p>
+            <div class="progress-bar">
+                <div class="progress-inner"></div>
+            </div>
+            <div class="progress-timers"
+                style="width: 300px; position: relative; left: 50%; transform: translateX(-50%); margin-top: 5px; margin-bottom: 20px;">
+                <span style="float: left; color: #cccccc; font-size: 12px;">0:00</span>
+                <span style="float: right; color: #cccccc; font-size: 12px;">0:00</span>
+            </div>
+            <div class="controls">
+                <button class="liquid-glass"><i class="ri-skip-back-fill"></i></button>
+                <button class="liquid-glass"><i class="ri-play-fill"></i></button>
+                <button class="liquid-glass"><i class="ri-skip-forward-fill"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-player" style="display: none;" crossorigin="anonymous"></audio>
+    <script src="https://cdn.jsdelivr.net/npm/dashjs@4.5.0/dist/dash.all.min.js"></script>
+
+    <script>
+        /*
+        WE LOVE MONOCHROME MUSIC :: https://monochrome.tf/
+        anyway, now for the staticifying of monochrome :D
+
+        (c) 2026 - present x8r, all rights reserved.
+        license: AGPL v3
+        see license for redistribution details
+
+        maybe i should remove liquid glass
+
+        thank you claude for helping me debug
+        */
+
+        const API_BASE = 'https://wolf.qqdl.site';
+
+        class MusicAPI {
+            async search(query) {
+                try {
+                    const response = await fetch(`${API_BASE}/search?s=${encodeURIComponent(query)}`);
+                    const json = await response.json();
+                    
+                    const data = json.data || json;
+                    const items = (data.items || []).map(item => ({ ...item, _type: 'track' }));
+                    
+                    return { items };
+                } catch (e) {
+                    console.error('Search error:', e);
+                    return { items: [] };
+                }
+            }
+
+            async getTrack(id) {
+                try {
+                    const response = await fetch(`${API_BASE}/track/?id=${id}`);
+                    return await response.json();
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            extractStreamUrlFromManifest(manifest) {
+                try {
+                    const decoded = atob(manifest);
+
+                    if (decoded.includes('<MPD')) {
+                        const blob = new Blob([decoded], { type: 'application/dash+xml' });
+                        const blobUrl = URL.createObjectURL(blob);
+                        return blobUrl;
+                    }
+
+                    try {
+                        const parsed = JSON.parse(decoded);
+                        if (parsed?.urls?.[0]) {
+                            return parsed.urls[0];
+                        }
+                    } catch {}
+                    
+                    const match = decoded.match(/https?:\/\/[\w\-.~:?#[@!$&'()*+,;=%/]+/);
+                    if (match) {
+                        return match[0];
+                    }
+                } catch (error) {
+                }
+                return null;
+            }
+
+            getCoverUrl(id, size = '320') {
+                if (!id) return `https://picsum.photos/seed/${Math.random()}/${size}`;
+                if (typeof id === 'string' && (id.startsWith('http') || id.startsWith('blob:') || id.startsWith('assets/'))) {
+                    return id;
+                }
+                const formattedId = id.replace(/-/g, '/');
+                return `https://resources.tidal.com/images/${formattedId}/${size}x${size}.jpg`;
+            }
+
+            getItemTitle(item) {
+                if (item._type === 'artist') return item.name;
+                if (item._type === 'album') return item.title;
+                if (item._type === 'playlist') return item.title;
+                return item.title || 'Unknown';
+            }
+
+            getItemSubtitle(item) {
+                if (item._type === 'artist') return 'Artist';
+                if (item._type === 'album') return item.artist?.name || 'Album';
+                if (item._type === 'playlist') return `${item.numberOfTracks || 0} tracks`;
+                return item.artist?.name || '';
+            }
+
+            getItemCover(item) {
+                if (item._type === 'artist') return item.picture;
+                if (item._type === 'album') return item.cover;
+                if (item._type === 'playlist') return item.squareImage || item.image;
+                return item.album?.cover;
+            }
+        }
+
+        class Player {
+            constructor(audioElement) {
+                this.audio = audioElement;
+                this.queue = [];
+                this.currentIndex = 0;
+                this.listeners = [];
+                this.dashPlayer = null;
+
+                this.audio.addEventListener('play', () => {
+                    this.notify('play');
+                });
+                this.audio.addEventListener('pause', () => {
+                    this.notify('pause');
+                });
+                this.audio.addEventListener('ended', () => {
+                    this.playNext();
+                });
+                this.audio.addEventListener('timeupdate', () => {
+                    this.notify('timeupdate');
+                });
+                this.audio.addEventListener('error', (e) => {
+                    this.notify('error');
+                });
+                this.audio.addEventListener('loadstart', () => {
+                });
+                this.audio.addEventListener('canplay', () => {
+                });
+            }
+
+            setQueue(tracks) {
+                this.queue = tracks;
+                this.currentIndex = 0;
+            }
+
+            addToQueue(track) {
+                this.queue.push(track);
+                this.notify('queue-updated');
+            }
+
+            async play(track) {
+                try {
+                    let streamUrl = null;
+
+                    const trackData = await api.getTrack(track.id);
+
+                    if (trackData?.data?.manifest) {
+                        streamUrl = api.extractStreamUrlFromManifest(trackData.data.manifest);
+                        
+                        if (streamUrl && streamUrl.startsWith('blob:')) {
+                            if (typeof dashjs !== 'undefined') {
+                                try {
+                                    if (!this.dashPlayer) {
+                                        this.dashPlayer = dashjs.MediaPlayer().create();
+                                    }
+                                    
+                                    this.dashPlayer.initialize(this.audio, streamUrl, true);
+                                    this.notify('track-changed');
+                                } catch (dashError) {
+                                }
+                            } else {
+                            }
+                        } else if (streamUrl) {
+                            this.audio.src = streamUrl;
+                            
+                            const playPromise = this.audio.play();
+                            if (playPromise !== undefined) {
+                                playPromise
+                                    .then(() => {
+                                        this.notify('track-changed');
+                                    })
+                                    .catch(e => {
+                                    });
+                            }
+                        }
+                    } else {
+                    }
+                } catch (e) {
+                }
+            }
+
+            playPause() {
+                if (this.audio.paused) {
+                    this.audio.play().catch(e => {});
+                } else {
+                    this.audio.pause();
+                }
+            }
+
+            playNext() {
+                if (this.currentIndex < this.queue.length - 1) {
+                    this.currentIndex++;
+                    this.play(this.queue[this.currentIndex]);
+                } else {
+                }
+            }
+
+            playPrev() {
+                if (this.currentIndex > 0) {
+                    this.currentIndex--;
+                    this.play(this.queue[this.currentIndex]);
+                }
+            }
+
+            getCurrentTrack() {
+                return this.queue[this.currentIndex];
+            }
+
+            on(event, callback) {
+                this.listeners.push({ event, callback });
+            }
+
+            notify(event) {
+                this.listeners.forEach(({ event: e, callback }) => {
+                    if (e === event) callback();
+                });
+            }
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        const debounce = (func, wait) => {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        };
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;',
+            };
+            return text.replace(/[&<>"']/g, (m) => map[m]);
+        }
+
+        const api = new MusicAPI();
+        const audioElement = document.getElementById('audio-player');
+        const player = new Player(audioElement);
+
+        const searchInput = document.querySelector('input');
+        const resultsContainer = document.getElementById('results');
+        const coverImg = document.getElementById('cover-img');
+        const songName = document.getElementById('song-name');
+        const artistName = document.getElementById('artist-name');
+        const playBtn = document.querySelector('.controls button:nth-child(2)');
+        const prevBtn = document.querySelector('.controls button:nth-child(1)');
+        const nextBtn = document.querySelector('.controls button:nth-child(3)');
+        const progressFill = document.querySelector('.progress-inner');
+        const currentTimeEl = document.querySelector('.progress-timers span:first-child');
+        const totalDurationEl = document.querySelector('.progress-timers span:last-child');
+        const progressBar = document.querySelector('.progress-bar');
+        let currentSearchResults = [];
+
+        const performSearch = debounce(async (query) => {
+            if (!query.trim()) {
+                resultsContainer.innerHTML = '<div style="color: #999; padding: 20px;">Start typing to search...</div>';
+                return;
+            }
+
+            resultsContainer.innerHTML = '<div style="color: #999; padding: 20px;">Searching...</div>';
+            const results = await api.search(query);
+
+            if (results.items && results.items.length > 0) {
+                currentSearchResults = results.items.filter(item => item._type === 'track');
+                resultsContainer.innerHTML = results.items
+                    .map((item) => {
+                        const title = api.getItemTitle(item);
+                        const subtitle = api.getItemSubtitle(item);
+                        const cover = api.getItemCover(item);
+                        const coverUrl = api.getCoverUrl(cover);
+                        const isPlayable = item._type === 'track';
+                        
+                        return `
+                            <div class="result liquid-glass" onclick="${isPlayable ? `playTrack(${JSON.stringify(item).replace(/"/g, '&quot;')})` : ''}" style="${!isPlayable ? 'cursor: default; opacity: 0.6;' : ''}">
+                                <img src="${coverUrl}" alt="${escapeHtml(title)}" height="48">
+                                <div class="info">
+                                    <div class="title">${escapeHtml(title)}</div>
+                                    <div class="artist" style="font-size: 12px;">${escapeHtml(subtitle)} ${item._type !== 'track' ? `• ${item._type}` : ''}</div>
+                                </div>
+                            </div>
+                        `;
+                    })
+                    .join('');
+            } else {
+                resultsContainer.innerHTML = '<div style="color: #999; padding: 20px;">No results found</div>';
+            }
+        }, 300);
+
+        searchInput.addEventListener('input', (e) => {
+            performSearch(e.target.value);
+        });
+
+        async function playTrack(track) {
+            player.setQueue(currentSearchResults);
+            const trackIndex = currentSearchResults.findIndex(t => t.id === track.id);
+            if (trackIndex !== -1) {
+                player.currentIndex = trackIndex;
+            }
+            player.play(track);
+            updateNowPlaying(track);
+        }
+
+        function updateNowPlaying(track) {
+            if (track) {
+                songName.textContent = track.title || 'Unknown';
+                artistName.textContent = track.artist?.name || 'Unknown Artist';
+                const imgSrc = api.getCoverUrl(track.album?.cover);
+                const coverImgEl = coverImg.querySelector('img') || document.createElement('img');
+                coverImgEl.src = imgSrc;
+                coverImgEl.style.width = '100%';
+                coverImgEl.style.height = '100%';
+                coverImgEl.style.borderRadius = '1.5rem';
+                coverImgEl.style.objectFit = 'cover';
+                coverImg.innerHTML = '';
+                coverImg.appendChild(coverImgEl);
+                if (track.duration) {
+                    totalDurationEl.textContent = formatTime(track.duration);
+                }
+            }
+        }
+
+        playBtn.addEventListener('click', () => {
+            player.playPause();
+        });
+
+        prevBtn.addEventListener('click', () => player.playPrev());
+        nextBtn.addEventListener('click', () => player.playNext());
+
+        progressBar.addEventListener('click', (e) => {
+            const rect = progressBar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            player.audio.currentTime = percent * player.audio.duration;
+        });
+
+        player.on('timeupdate', () => {
+            const duration = player.audio.duration || 0;
+            const current = player.audio.currentTime || 0;
+            
+            if (duration > 0 && !isNaN(duration)) {
+                const percent = (current / duration) * 100;
+                progressFill.style.width = `${percent}%`;
+                currentTimeEl.textContent = formatTime(current);
+                if (totalDurationEl.textContent === '0:00') {
+                    totalDurationEl.textContent = formatTime(duration);
+                }
+            }
+        });
+        
+        player.audio.addEventListener('timeupdate', () => {
+            const duration = player.audio.duration || 0;
+            const current = player.audio.currentTime || 0;
+            
+            if (duration > 0 && !isNaN(duration)) {
+                const percent = (current / duration) * 100;
+                progressFill.style.width = percent + '%';
+                currentTimeEl.textContent = formatTime(current);
+            }
+        });
+        
+        player.audio.addEventListener('loadedmetadata', () => {
+            const duration = player.audio.duration || 0;
+            if (duration > 0) {
+                totalDurationEl.textContent = formatTime(duration);
+            }
+        });
+
+        player.on('play', () => {
+            playBtn.innerHTML = '<i class="ri-pause-fill"></i>';
+        });
+
+        player.on('pause', () => {
+            playBtn.innerHTML = '<i class="ri-play-fill"></i>';
+        });
+
+        player.on('track-changed', () => {
+            updateNowPlaying(player.getCurrentTrack());
+        });
+
+        setInterval(() => {
+            if (player.audio.paused) {
+                playBtn.innerHTML = '<i class="ri-play-fill"></i>';
+            } else {
+                playBtn.innerHTML = '<i class="ri-pause-fill"></i>';
+            }
+        }, 100);
+    </script>
+
+</body>
+
+</html>
