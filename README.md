@@ -1,6 +1,8 @@
 # [x8rr/music](https://music.x8r.dev/)
 A static alternate frontend for [Monochrome](https://monochrome.tf).
 
+I DINDHDJEJEJ
+
 ## Credits
 > ### x8r
 > Owner
